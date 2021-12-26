@@ -312,6 +312,30 @@ def test_flatten_dict_with_list_with_enumerate_types(
     )
 
 
+@pytest.fixture
+def dict_with_list_of_dict():
+    return {"a": [{"a": "1.0.0", "b": "1.0.1"}, {"a": "1.1.0", "b": "1.1.1"}]}
+
+
+@pytest.fixture
+def flat_tuple_dict_with_enumerated_list_intermediate():
+    return {
+        ("a", 0, "a"): "1.0.0",
+        ("a", 0, "b"): "1.0.1",
+        ("a", 1, "a"): "1.1.0",
+        ("a", 1, "b"): "1.1.1",
+    }
+
+
+def test_flatten_dict_with_list_of_dict_with_enumerate_types(
+    dict_with_list_of_dict, flat_tuple_dict_with_enumerated_list_intermediate
+):
+    assert (
+        flatten(dict_with_list_of_dict, enumerate_types=(list,))
+        == flat_tuple_dict_with_enumerated_list_intermediate
+    )
+
+
 def test_flatten_list():
     assert flatten([1, 2], enumerate_types=(list,)) == {(0,): 1, (1,): 2}
 
