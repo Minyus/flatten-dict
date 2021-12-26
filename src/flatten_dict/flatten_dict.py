@@ -31,6 +31,7 @@ def flatten(
     max_flatten_depth=None,
     enumerate_types=(),
     keep_empty_types=(),
+    keep_element_types=(),
 ):
     """Flatten `Mapping` object.
 
@@ -62,6 +63,18 @@ def flatten(
 
         >>> flatten({1: 2, 3: {}}, keep_empty_types=(dict,))
         {(1,): 2, (3,): {}}
+    keep_element_types : Sequence[type]
+        As an option if `enumerate_types` is specified, skip enumerating if at least one of the
+        elements is listed in `keep_element_types`.
+        For example, if we set `enumerate_types` to ``(list,)`` and `keep_element_types` to
+        ``(str, )``, list of str will be kept without being enumerated while list of non-str will
+        be enumerated:
+
+        >>> flatten({'a': ['b', 'c']}, enumerate_types=(list,), keep_element_types=(str,))
+        {('a',): ['b', 'c']}
+
+        >>> flatten({'a': [{'b': 'foo'}]}, enumerate_types=(list,), keep_element_types=(str,))
+        {('a', 0, 'b'): 'foo'}
 
     Returns
     -------
@@ -84,6 +97,15 @@ def flatten(
     flat_dict = {}
 
     def _flatten(_d, depth, parent=None):
+
+        if (
+            keep_element_types
+            and isinstance(_d, enumerate_types)
+            and any([isinstance(_d[i], keep_element_types) for i in range(len(_d))])
+        ):
+            flat_dict[parent] = _d
+            return False
+
         key_value_iterable = (
             enumerate(_d) if isinstance(_d, enumerate_types) else six.viewitems(_d)
         )
